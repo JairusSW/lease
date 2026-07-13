@@ -1,0 +1,21 @@
+{
+  "$schema": "https://wago.sh/schema.json",
+  "schema": "wago-plugin/v1",
+  "module": "github.com/JairusSW/lease",
+  "name": "Lease",
+  "version": "0.0.0",
+  "description": "A pool of stateless, snapshot-backed WebAssembly instances leased for one-shot execution: acquire a clean instance, call exported functions, reset, release.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/JairusSW/lease",
+  "repository": "https://github.com/JairusSW/lease",
+  "authors": ["JairusSW"],
+  "keywords": ["lease", "pool", "instance-pool", "snapshot", "stateless", "faas", "serverless", "sandbox", "warm-start", "webassembly", "wasm"],
+  "category": "runtime",
+  "engines": { "wago": ">=0.1.0" },
+  "plugins": [
+    {
+      "name": "github.com/JairusSW/lease",
+      "capabilities": {}
+    }
+  ]
+}
