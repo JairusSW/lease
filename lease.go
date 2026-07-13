@@ -7,13 +7,14 @@
 // returns to the pool. Instances run in parallel — one lease at a time per
 // instance, so a pool of N instances serves N concurrent calls.
 //
-// Instances are minted by a Factory. The common case is FromSnapshot, which
-// restores fresh instances from a wago.Snapshot without re-running the module's
-// init or start function — a warm start rather than a cold one. Because WebAssembly
-// has no in-place "reset instance" operation, a reset is realized by closing the
-// used instance and minting a clean replacement from the snapshot; each restore
-// reproduces the identical captured image, so every lease starts from the same
-// clean state.
+// Instances are minted by a Factory. FromSnapshot restores fresh instances from a
+// wago.Snapshot without re-running the module's init or start function — a warm
+// start. FromCompiled and FromModule mint from a plain compiled or runtime-bound
+// module instead (a cold start each time, but FromModule instances get the
+// runtime's host imports). Because WebAssembly has no in-place "reset instance"
+// operation, a reset is realized by closing the used instance and minting a clean
+// replacement; every mint reproduces the same clean state, so every lease starts
+// from it.
 //
 // The pool is a plain library (Pool/NewPool). A thin wago.Extension wrapper
 // (New/Plugin) is also provided so it can be registered on a runtime and shared
@@ -40,13 +41,43 @@ type Factory func() (*wago.Instance, error)
 // FromSnapshot returns a Factory that restores fresh instances from snap. The
 // snapshot supplies the restored instances' imports and GC config (captured at
 // Capture time), so the pool needs nothing else — no runtime, no host wiring —
-// for a module whose imports were present at capture.
+// for a module whose imports were present at capture. Restore skips the module's
+// init and start function, so this is a warm reset.
 func FromSnapshot(snap *wago.Snapshot) Factory {
 	return func() (*wago.Instance, error) {
 		if snap == nil {
 			return nil, errors.New("lease: nil snapshot")
 		}
 		return wago.Instantiate(snap)
+	}
+}
+
+// FromCompiled returns a Factory that mints fresh instances from a compiled
+// module — no snapshot. Each mint re-runs the module's data init and start
+// function, so every lease starts from the module's declared initial state: a
+// cold start rather than a warm one, but an equally clean reset. Pass Imports (or
+// other wago instantiate options) as opts for a module with host imports.
+func FromCompiled(c *wago.Compiled, opts ...any) Factory {
+	return func() (*wago.Instance, error) {
+		if c == nil {
+			return nil, errors.New("lease: nil compiled module")
+		}
+		return wago.Instantiate(c, opts...)
+	}
+}
+
+// FromModule returns a Factory that mints fresh instances from a runtime-bound
+// module — no snapshot. Unlike snapshot or bare-compiled instances, these are
+// wired to the runtime's plugin host imports (WASI, other plugins), so use it for
+// modules that call host functions the runtime provides. The runtime does not
+// close these instances — the pool owns them (see Runtime.Close: "direct
+// instances remain caller-owned"). Each mint re-runs the module's init/start.
+func FromModule(rt *wago.Runtime, mod *wago.Module) Factory {
+	return func() (*wago.Instance, error) {
+		if rt == nil || mod == nil {
+			return nil, errors.New("lease: nil runtime or module")
+		}
+		return rt.Instantiate(context.Background(), mod)
 	}
 }
 

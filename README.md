@@ -1,6 +1,6 @@
 <div align="center">
     <h1><code>lease</code></h1>
-    <p>A pool of stateless, snapshot-backed WebAssembly instances for the <a href="https://github.com/wago-org/wago">Wago</a> runtime — acquire a clean instance, call it, reset, release.</p>
+    <p>A pool of stateless WebAssembly instances for the <a href="https://github.com/wago-org/wago">Wago</a> runtime — acquire a clean instance, call it, reset, release.</p>
 </div>
 
 <p align="center">
@@ -13,7 +13,7 @@
 
 `lease` pools **stateless WebAssembly instances** for one-shot execution — the serverless / FaaS model. You keep a set of warm, clean instances; a caller **acquires** one, **invokes** one or more exported functions, then **releases** it. On release the instance is reset to clean state and its capacity returns to the pool. Instances run in **parallel** — one lease at a time per instance, so a pool of N instances serves N concurrent calls.
 
-The clean instances come from a [wago **snapshot**](https://github.com/wago-org/wago): `Capture` warms a module once (running its init / start), and every restored instance starts from that captured image **without re-running init** — a warm start instead of a cold one. Because WebAssembly has no in-place "reset instance" operation, a **reset is a discard + restore**: the used instance is closed and a fresh one is restored from the snapshot. Every restore reproduces the identical captured image, so every lease begins from exactly the same clean state.
+The clean instances come from an instance **source**. The warm-start source is a [wago **snapshot**](https://github.com/wago-org/wago) (`FromSnapshot`): `Capture` warms a module once (running its init / start), and every restored instance starts from that captured image **without re-running init**. You can also pool non-snapshot instances — a plain compiled module (`FromCompiled`) or a runtime-bound module (`FromModule`, whose instances get the runtime's **host imports** — WASI, other plugins — which snapshot instances don't). Those cold-start each mint but pool and reset identically. Because WebAssembly has no in-place "reset instance" operation, a **reset is a discard + re-mint**: the used instance is closed and a fresh one minted from the source. Every mint reproduces the same clean state, so every lease begins from exactly it.
 
 What you get:
 
@@ -101,7 +101,12 @@ Restored instances get **only the imports captured with the snapshot** — not a
 
 ```go
 func NewPool(factory Factory, opts Options) (*Pool, error)
-func FromSnapshot(snap *wago.Snapshot) Factory
+
+// Instance sources (pick one, or supply your own Factory):
+func FromSnapshot(snap *wago.Snapshot) Factory                 // warm restore, skips init
+func FromCompiled(c *wago.Compiled, opts ...any) Factory       // plain module, cold start
+func FromModule(rt *wago.Runtime, mod *wago.Module) Factory    // runtime-wired: gets host imports
+
 func OptimalInstances() int
 
 func (p *Pool) Acquire(ctx context.Context) (*Lease, error)

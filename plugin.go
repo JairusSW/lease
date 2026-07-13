@@ -32,8 +32,19 @@ func WithSnapshot(snap *wago.Snapshot) Option {
 	return func(p *Plugin) { p.factory = FromSnapshot(snap) }
 }
 
-// WithFactory pools instances minted by factory, for cases where the embedder —
-// not the snapshot — supplies the host wiring.
+// WithCompiled pools instances minted from a compiled module (via FromCompiled) —
+// a non-snapshot source. Pass Imports as opts for modules with host imports.
+func WithCompiled(c *wago.Compiled, opts ...any) Option {
+	return func(p *Plugin) { p.factory = FromCompiled(c, opts...) }
+}
+
+// WithModule pools instances minted from a runtime-bound module (via FromModule) —
+// a non-snapshot source whose instances get the runtime's host imports.
+func WithModule(rt *wago.Runtime, mod *wago.Module) Option {
+	return func(p *Plugin) { p.factory = FromModule(rt, mod) }
+}
+
+// WithFactory pools instances minted by an arbitrary factory.
 func WithFactory(factory Factory) Option { return func(p *Plugin) { p.factory = factory } }
 
 // WithOptions sets the pool Options.
@@ -51,7 +62,7 @@ func New(opts ...Option) *Plugin {
 func (*Plugin) Info() wago.ExtensionInfo {
 	return wago.ExtensionInfo{
 		ID: "wago.lease", Name: "Lease", Version: "0.1.0",
-		Description: "A pool of stateless snapshot-backed WebAssembly instances leased for one-shot execution",
+		Description: "A pool of stateless WebAssembly instances (snapshot-, compiled-, or module-backed) leased for one-shot execution",
 		Stability:   wago.Experimental, Repository: "https://github.com/JairusSW/lease",
 		License: "Apache-2.0",
 		Tags:    []string{"lease", "pool", "snapshot", "stateless", "faas", "sandbox"},

@@ -4,7 +4,7 @@
   "module": "github.com/JairusSW/lease",
   "name": "Lease",
   "version": "0.0.0",
-  "description": "A pool of stateless, snapshot-backed WebAssembly instances leased for one-shot execution: acquire a clean instance, call exported functions, reset, release.",
+  "description": "A pool of stateless WebAssembly instances (snapshot, compiled, or runtime module) leased for one-shot execution: acquire a clean instance, call exported functions, reset, release.",
   "license": "Apache-2.0",
   "homepage": "https://github.com/JairusSW/lease",
   "repository": "https://github.com/JairusSW/lease",
