@@ -1,6 +1,5 @@
 {
-  "$schema": "https://wago.sh/schema.json",
-  "schema": "wago-plugin/v1",
+  "$schema": "https://wago.sh/v0/schema.json",
   "module": "github.com/JairusSW/lease",
   "name": "Lease",
   "version": "0.0.0",
@@ -11,11 +10,5 @@
   "authors": ["JairusSW"],
   "keywords": ["lease", "pool", "instance-pool", "snapshot", "stateless", "faas", "serverless", "sandbox", "warm-start", "webassembly", "wasm"],
   "category": "runtime",
-  "engines": { "wago": ">=0.1.0" },
-  "plugins": [
-    {
-      "name": "github.com/JairusSW/lease",
-      "capabilities": {}
-    }
-  ]
+  "engines": { "wago": ">=0.1.0" }
 }
