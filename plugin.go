@@ -61,7 +61,7 @@ func New(opts ...Option) *Plugin {
 
 func (*Plugin) Info() wago.ExtensionInfo {
 	return wago.ExtensionInfo{
-		ID: "wago.lease", Name: "Lease", Version: "0.1.0",
+		ID: "wago.lease", Name: "Lease", Version: "0.0.0",
 		Description: "A pool of stateless WebAssembly instances (snapshot-, compiled-, or module-backed) leased for one-shot execution",
 		Stability:   wago.Experimental, Repository: "https://github.com/JairusSW/lease",
 		License: "Apache-2.0",

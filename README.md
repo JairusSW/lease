@@ -23,7 +23,7 @@ What you get:
 - **Backpressure** — acquiring past capacity blocks until a lease returns, with an optional timeout or context cancellation.
 - **Reset or reuse** — reset to clean state on every release (default), or reuse instances for truly stateless handlers.
 
-> **Stability:** experimental (`v0.1.0`). The API may change before `v1.0.0`.
+> **Stability:** experimental (`v0.0.0`). The API may change without notice.
 
 ### Use cases
 
