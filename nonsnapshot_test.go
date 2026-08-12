@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/wago-org/wago"
-	"github.com/wago-org/wago/testutil/wasmtest"
+	"github.com/wago-org/wago/tests/wasmtest"
 )
 
 func TestFromCompiledResets(t *testing.T) {
@@ -56,33 +56,46 @@ func addBaseModule() []byte {
 	)
 }
 
-// baseHost is a minimal extension exporting env.base() -> a constant.
+// baseHost is a minimal plugin exporting env.base() -> a constant.
 type baseHost struct{ val uint64 }
 
-func (h *baseHost) Info() wago.ExtensionInfo {
-	return wago.ExtensionInfo{
-		ID: "lease.test.base", RequiresCapabilities: []wago.PluginCapability{wago.PluginHostImports},
-	}
-}
-
-func (h *baseHost) Register(reg *wago.Registry) error {
+func (h *baseHost) Register(reg *wago.Registrar) error {
 	imports, err := reg.HostImports()
 	if err != nil {
 		return err
 	}
-	imports.Module("env").Func("base", func(_ wago.HostModule, _, results []uint64) {
+	module, err := imports.Module("env")
+	if err != nil {
+		return err
+	}
+	module.Func("base", func(_ wago.HostModule, _, results []uint64) {
 		results[0] = h.val
 	}).Results(wago.ValI32)
 	return nil
 }
 
 // TestFromModuleWiresHostImports pools a module that calls a host import and
-// verifies the runtime wiring reaches every pooled instance — the capability that
-// snapshot instances (which carry only captured imports) do not have.
+// verifies the runtime wiring reaches every pooled instance.
 func TestFromModuleWiresHostImports(t *testing.T) {
 	rt := wago.NewRuntime()
 	defer rt.Close()
-	if err := rt.Use(&baseHost{val: 100}); err != nil {
+	definition := pluginTestDefinition("example.com/lease-base-host")
+	definition.Authorities = []wago.AuthorityRequest{{
+		Name: wago.AuthorityHostImportDefine, Mode: wago.AuthorityRequired,
+		Reason: "provide the env.base test import", Scope: wago.AuthorityScope{Modules: []string{"env"}},
+	}}
+	digest, err := wago.DefinitionDigest(definition)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := rt.LoadPlugins(context.Background(), wago.PluginSet{
+		Providers: []wago.PluginProvider{{Definition: definition, New: func() wago.Plugin { return &baseHost{val: 100} }}},
+		Selections: []wago.PluginSelection{{
+			ID: definition.ID, DefinitionDigest: digest, Direct: true,
+			Dependencies: map[string]string{},
+			Grants:       []wago.AuthorityGrant{{Name: wago.AuthorityHostImportDefine, Scope: wago.AuthorityScope{Modules: []string{"env"}}}},
+		}},
+	}); err != nil {
 		t.Fatalf("use host: %v", err)
 	}
 	mod, err := rt.Compile(addBaseModule())
@@ -110,9 +123,6 @@ func TestFromModuleWiresHostImports(t *testing.T) {
 }
 
 func TestFromConstructorsNilGuards(t *testing.T) {
-	if _, err := FromSnapshot(nil)(); err == nil {
-		t.Fatal("FromSnapshot(nil) mint should error")
-	}
 	if _, err := FromCompiled(nil)(); err == nil {
 		t.Fatal("FromCompiled(nil) mint should error")
 	}

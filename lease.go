@@ -7,18 +7,16 @@
 // returns to the pool. Instances run in parallel — one lease at a time per
 // instance, so a pool of N instances serves N concurrent calls.
 //
-// Instances are minted by a Factory. FromSnapshot restores fresh instances from a
-// wago.Snapshot without re-running the module's init or start function — a warm
-// start. FromCompiled and FromModule mint from a plain compiled or runtime-bound
-// module instead (a cold start each time, but FromModule instances get the
-// runtime's host imports). Because WebAssembly has no in-place "reset instance"
+// Instances are minted by a Factory. FromCompiled and FromModule mint from a
+// plain compiled or runtime-bound module; FromModule instances receive the
+// runtime's reviewed plugin host imports. Because WebAssembly has no in-place "reset instance"
 // operation, a reset is realized by closing the used instance and minting a clean
 // replacement; every mint reproduces the same clean state, so every lease starts
 // from it.
 //
-// The pool is a plain library (Pool/NewPool). A thin wago.Extension wrapper
-// (New/Plugin) is also provided so it can be registered on a runtime and shared
-// with other plugins through ServiceKey.
+// The pool is also available as a plain library through Pool and NewPool. The
+// explicit Wago provider composes Source implementations from other plugins
+// and exposes callback-scoped one-shot execution through Contract.
 package lease
 
 import (
@@ -35,22 +33,8 @@ import (
 
 // Factory mints a fresh, clean instance. It is called to grow the pool and to
 // produce the clean replacement that a reset-on-release installs. It must be safe
-// for concurrent use. The canonical implementation is FromSnapshot.
+// for concurrent use.
 type Factory func() (*wago.Instance, error)
-
-// FromSnapshot returns a Factory that restores fresh instances from snap. The
-// snapshot supplies the restored instances' imports and GC config (captured at
-// Capture time), so the pool needs nothing else — no runtime, no host wiring —
-// for a module whose imports were present at capture. Restore skips the module's
-// init and start function, so this is a warm reset.
-func FromSnapshot(snap *wago.Snapshot) Factory {
-	return func() (*wago.Instance, error) {
-		if snap == nil {
-			return nil, errors.New("lease: nil snapshot")
-		}
-		return wago.Instantiate(snap)
-	}
-}
 
 // FromCompiled returns a Factory that mints fresh instances from a compiled
 // module — no snapshot. Each mint re-runs the module's data init and start
@@ -69,9 +53,11 @@ func FromCompiled(c *wago.Compiled, opts ...any) Factory {
 // FromModule returns a Factory that mints fresh instances from a runtime-bound
 // module — no snapshot. Unlike snapshot or bare-compiled instances, these are
 // wired to the runtime's plugin host imports (WASI, other plugins), so use it for
-// modules that call host functions the runtime provides. The runtime does not
-// close these instances — the pool owns them (see Runtime.Close: "direct
-// instances remain caller-owned"). Each mint re-runs the module's init/start.
+// modules that call host functions the runtime provides. The pool owns each
+// instance during ordinary operation and must close replaced instances;
+// Runtime.Close is the final owner and closes and drains any still-live
+// runtime-created instances before plugin teardown. Each mint re-runs the
+// module's init/start.
 func FromModule(rt *wago.Runtime, mod *wago.Module) Factory {
 	return func() (*wago.Instance, error) {
 		if rt == nil || mod == nil {
@@ -111,7 +97,7 @@ var (
 	ErrPoolClosed     = errors.New("lease: pool is closed")
 	ErrAcquireTimeout = errors.New("lease: acquire timed out")
 	ErrLeaseReleased  = errors.New("lease: lease already released")
-	ErrNoFactory      = errors.New("lease: no factory or snapshot configured")
+	ErrNoFactory      = errors.New("lease: no factory configured")
 )
 
 // Options configures a Pool.

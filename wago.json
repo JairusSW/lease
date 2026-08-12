@@ -1,14 +1,17 @@
 {
-  "$schema": "https://wago.sh/v0/schema.json",
-  "module": "github.com/JairusSW/lease",
-  "name": "Lease",
-  "version": "0.0.0",
-  "description": "A pool of stateless WebAssembly instances (snapshot, compiled, or runtime module) leased for one-shot execution: acquire a clean instance, call exported functions, reset, release.",
-  "license": "Apache-2.0",
-  "homepage": "https://github.com/JairusSW/lease",
-  "repository": "https://github.com/JairusSW/lease",
-  "authors": ["JairusSW"],
-  "keywords": ["lease", "pool", "instance-pool", "snapshot", "stateless", "faas", "serverless", "sandbox", "warm-start", "webassembly", "wasm"],
-  "category": "runtime",
-  "engines": { "wago": ">=0.1.0" }
+  "$schema": "https://wago.sh/v1/schema.json",
+  "package": {
+    "module": "github.com/JairusSW/lease",
+    "version": "0.1.0",
+    "name": "Lease",
+    "description": "Bounded pools of clean WebAssembly instances for one-shot execution.",
+    "stability": "experimental",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/JairusSW/lease",
+    "repository": "https://github.com/JairusSW/lease",
+    "category": "runtime",
+    "tags": ["lease", "pool", "instance-pool", "stateless", "faas", "serverless", "webassembly", "wasm"],
+    "authors": [{ "name": "Jairus Tanaka", "github": "JairusSW" }],
+    "engines": { "wago": ">=0.1.0" }
+  }
 }
