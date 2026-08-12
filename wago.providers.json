@@ -1,0 +1,75 @@
+{
+  "$schema": "https://wago.sh/v1/providers.schema.json",
+  "providers": [
+    {
+      "importPath": "github.com/JairusSW/lease/register",
+      "definition": {
+        "id": "github.com/JairusSW/lease",
+        "name": "Lease",
+        "version": "0.1.0",
+        "description": "Bounded pools of clean WebAssembly instances for one-shot execution.",
+        "stability": "experimental",
+        "compatibility": {
+          "engines": {
+            "wago": "\u003e=0.1.0"
+          }
+        },
+        "provenance": {
+          "homepage": "https://github.com/JairusSW/lease",
+          "repository": "https://github.com/JairusSW/lease",
+          "license": "Apache-2.0",
+          "authors": [
+            "Jairus Tanaka"
+          ]
+        },
+        "configSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "acquireTimeoutMillis": {
+              "maximum": 86400000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "maxLive": {
+              "maximum": 1024,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "maxSources": {
+              "maximum": 1024,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "minIdle": {
+              "maximum": 1024,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "release": {
+              "enum": [
+                "reset",
+                "reuse"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "provides": [
+          {
+            "id": "github.com/JairusSW/lease/service",
+            "major": 1
+          }
+        ],
+        "consumes": [
+          {
+            "id": "github.com/JairusSW/lease/source",
+            "major": 1,
+            "mode": "many"
+          }
+        ]
+      },
+      "definitionDigest": "sha256:e7a6e7286c92f6b9705d791f05f6a8fd14613c63c15968bcf48b0167b38b0efb"
+    }
+  ]
+}
