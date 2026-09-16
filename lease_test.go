@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/wago-org/wago"
-	"github.com/wago-org/wago/tests/wasmtest"
+	"github.com/wago-org/wago/tests/support/wasmtest"
 )
 
 // counterModule hand-builds a wasm module with a mutable global "counter" and a
