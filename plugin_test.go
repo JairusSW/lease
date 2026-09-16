@@ -123,7 +123,7 @@ func TestPluginComposesSourceThroughLeasedContract(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := rt.Close(); err != nil {
+	if err := rt.CloseContext(context.Background()); err != nil {
 		t.Fatal(err)
 	}
 	if err := serviceRef.With(func(Service) error { return nil }); !errors.Is(err, wago.ErrPermissionDenied) {

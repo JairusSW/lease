@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/wago-org/wago"
-	"github.com/wago-org/wago/tests/wasmtest"
+	"github.com/wago-org/wago/tests/support/wasmtest"
 )
 
 func TestFromCompiledResets(t *testing.T) {
@@ -64,12 +64,8 @@ func (h *baseHost) Register(reg *wago.Registrar) error {
 	if err != nil {
 		return err
 	}
-	module, err := imports.Module("env")
-	if err != nil {
-		return err
-	}
-	module.Func("base", func(_ wago.HostModule, _, results []uint64) {
-		results[0] = h.val
+	imports.HostFunc("env", "base", func(call wago.HostCall) {
+		call.SetI32(0, int32(h.val))
 	}).Results(wago.ValI32)
 	return nil
 }
