@@ -6,7 +6,7 @@
       "definition": {
         "id": "github.com/JairusSW/lease",
         "name": "Lease",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Bounded pools of clean WebAssembly instances for one-shot execution.",
         "stability": "experimental",
         "compatibility": {
@@ -69,7 +69,7 @@
           }
         ]
       },
-      "definitionDigest": "sha256:e7a6e7286c92f6b9705d791f05f6a8fd14613c63c15968bcf48b0167b38b0efb"
+      "definitionDigest": "sha256:9ce715de4c0c95cbbe442e1c0522e84052f15c68c1b75405c064d3f01a57e848"
     }
   ]
 }

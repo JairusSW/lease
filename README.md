@@ -16,7 +16,7 @@ the next lease.
 Use it as a Go library, or install it as a Wago plugin and let other plugins
 contribute instance sources through a typed contract.
 
-> Lease is experimental (`v0.1.0`). Its API may change before the first stable
+> Lease is experimental (`v0.1.1`). Its API may change before the first stable
 > release.
 
 ## Install

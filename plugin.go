@@ -165,7 +165,7 @@ func Definition() wago.PluginDefinition {
 	return wago.PluginDefinition{
 		ID:          PluginID,
 		Name:        "Lease",
-		Version:     "0.1.0",
+		Version:     "0.1.1",
 		Description: "Bounded pools of clean WebAssembly instances for one-shot execution.",
 		Stability:   wago.Experimental,
 		Compatibility: wago.Compatibility{
